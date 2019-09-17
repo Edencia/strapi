@@ -66,14 +66,18 @@ module.exports = function createQueryBuilder({ model, modelKey, strapi }) {
     return entry ? entry.toJSON() : null;
   }
 
+  function initFind(params) {
+    const filters = convertRestQueryParams(params);
+
+    return model
+      .query(buildQuery({ model, filters }));
+  }
+
   /**
    * Find multiple entries based on params
    */
   function find(params, populate, { transacting } = {}) {
-    const filters = convertRestQueryParams(params);
-
-    return model
-      .query(buildQuery({ model, filters }))
+    return initFind(params)
       .fetchAll({
         withRelated: populate,
         transacting,
@@ -195,7 +199,7 @@ module.exports = function createQueryBuilder({ model, modelKey, strapi }) {
     );
   }
 
-  function search(params, populate) {
+  function initSearch(params) {
     // Convert `params` object to filters compatible with Bookshelf.
     const filters = modelUtils.convertParams(modelKey, params);
 
@@ -214,7 +218,11 @@ module.exports = function createQueryBuilder({ model, modelKey, strapi }) {
         if (filters.limit) {
           qb.limit(_.toNumber(filters.limit));
         }
-      })
+      });
+  }
+
+  function search(params, populate) {
+    return initSearch(params)
       .fetchAll({
         withRelated: populate,
       });
@@ -472,11 +480,13 @@ module.exports = function createQueryBuilder({ model, modelKey, strapi }) {
 
   return {
     findOne,
+    initFind,
     find,
     create,
     update,
     delete: deleteMany,
     count,
+    initSearch,
     search,
     countSearch,
   };
