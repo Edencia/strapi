@@ -3,23 +3,26 @@ import PropTypes from 'prop-types';
 import { isEmpty } from 'lodash';
 import { FormattedMessage } from 'react-intl';
 import cn from 'classnames';
+import Input from './Input';
 
-import styles from './styles.scss';
-
-/* eslint-disable jsx-a11y/no-autofocus */
 function InputNumber(props) {
-  const formattedPlaceholder = props.placeholder === '' ? 'app.utils.placeholder.defaultMessage' : props.placeholder;
-  
+  const formattedPlaceholder =
+    props.placeholder === ''
+      ? 'app.utils.placeholder.defaultMessage'
+      : props.placeholder;
+
   return (
-    <FormattedMessage id={formattedPlaceholder} defaultMessage={formattedPlaceholder}>
-      {(message) => (
-        <input
+    <FormattedMessage
+      id={formattedPlaceholder}
+      defaultMessage={formattedPlaceholder}
+    >
+      {message => (
+        <Input
           autoFocus={props.autoFocus}
           className={cn(
-            styles.input,
             'form-control',
             !props.deactivateErrorHighlight && props.error && 'is-invalid',
-            !isEmpty(props.className) && props.className,
+            !isEmpty(props.className) && props.className
           )}
           disabled={props.disabled}
           id={props.name}
@@ -29,7 +32,7 @@ function InputNumber(props) {
           onFocus={props.onFocus}
           placeholder={message}
           ref={props.inputRef}
-          step={!Number.isNaN(Number(props.step)) ? Number(props.step) : 1}
+          step={props.step}
           style={props.style}
           tabIndex={props.tabIndex}
           type="number"
@@ -50,7 +53,7 @@ InputNumber.defaultProps = {
   onBlur: () => {},
   onFocus: () => {},
   placeholder: 'app.utils.placeholder.defaultMessage',
-  step: 1,
+  step: 'any',
   style: {},
   tabIndex: '0',
 };
@@ -70,10 +73,7 @@ InputNumber.propTypes = {
   step: PropTypes.number,
   style: PropTypes.object,
   tabIndex: PropTypes.string,
-  value: PropTypes.oneOfType([
-    PropTypes.number,
-    PropTypes.string,
-  ]).isRequired,
+  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
 };
 
 export default InputNumber;

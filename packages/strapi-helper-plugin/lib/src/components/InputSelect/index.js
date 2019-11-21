@@ -9,23 +9,19 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { isEmpty, isObject, map } from 'lodash';
 import cn from 'classnames';
-
 // Design
 import SelectOption from '../SelectOption';
+import Select from './Select';
 
-import styles from './styles.scss';
-
-/* eslint-disable jsx-a11y/no-autofocus */
 function InputSelect(props) {
   return (
-    <select
+    <Select
       autoFocus={props.autoFocus}
       className={cn(
-        styles.inputSelect,
         'form-control',
         !props.deactivateErrorHighlight && props.error && 'is-invalid',
-        !isEmpty(props.className) && props.className,
-        props.disabled && styles.inputSelectDisabled
+        !isEmpty(props.className) && props.className
+        // props.disabled && styles.inputSelectDisabled
       )}
       disabled={props.disabled}
       id={props.name}
@@ -66,7 +62,7 @@ function InputSelect(props) {
           </option>
         );
       })}
-    </select>
+    </Select>
   );
 }
 

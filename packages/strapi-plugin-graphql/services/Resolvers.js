@@ -41,7 +41,7 @@ const generateEnumDefinitions = (attributes, globalId) => {
     .join('');
 };
 
-const mutateAssocAttrbiutes = (associations = [], attributes) => {
+const mutateAssocAttributes = (associations = [], attributes) => {
   associations
     .filter(association => association.type === 'collection')
     .forEach(association => {
@@ -136,7 +136,6 @@ const buildAssocResolvers = (model, name, { plugin }) => {
 
       default: {
         resolver[association.alias] = async (obj, options) => {
-          // eslint-disable-line no-unused-vars
           // Construct parameters object to retrieve the correct related entries.
           const params = {
             model: association.model || association.collection,
@@ -166,14 +165,18 @@ const buildAssocResolvers = (model, name, { plugin }) => {
             };
 
             if (
-              (association.nature === 'manyToMany' && association.dominant) ||
-              association.nature === 'manyWay'
+              ((association.nature === 'manyToMany' && association.dominant) ||
+                association.nature === 'manyWay') &&
+              _.has(obj, association.alias) // if populated
             ) {
               _.set(
                 queryOpts,
                 ['query', ref.primaryKey],
-                obj[association.alias].map(val => val[ref.primaryKey] || val) ||
-                  []
+                obj[association.alias]
+                  ? obj[association.alias]
+                      .map(val => val[ref.primaryKey] || val)
+                      .sort()
+                  : []
               );
             } else {
               _.set(queryOpts, ['query', association.via], obj[ref.primaryKey]);
@@ -219,7 +222,7 @@ const buildModel = (model, name, { plugin, isGroup = false } = {}) => {
   }
 
   const attributes = convertAttributes(model.attributes, globalId);
-  mutateAssocAttrbiutes(model.associations, attributes);
+  mutateAssocAttributes(model.associations, attributes);
   _.merge(attributes, initialState);
 
   definition += generateEnumDefinitions(model.attributes, globalId);
@@ -301,7 +304,7 @@ const buildShadowCRUD = (models, plugin) => {
 
     // Convert our layer Model to the GraphQL DL.
     const attributes = convertAttributes(model.attributes, globalId);
-    mutateAssocAttrbiutes(model.associations, attributes);
+    mutateAssocAttributes(model.associations, attributes);
     _.merge(attributes, initialState);
 
     acc.definition += generateEnumDefinitions(model.attributes, globalId);
@@ -326,11 +329,21 @@ const buildShadowCRUD = (models, plugin) => {
     const queries = {
       singular:
         _.get(resolver, `Query.${singularName}`) !== false
-          ? Query.composeQueryResolver(_schema, plugin, name, true)
+          ? Query.composeQueryResolver({
+              _schema,
+              plugin,
+              name,
+              isSingular: true,
+            })
           : null,
       plural:
         _.get(resolver, `Query.${pluralName}`) !== false
-          ? Query.composeQueryResolver(_schema, plugin, name, false)
+          ? Query.composeQueryResolver({
+              _schema,
+              plugin,
+              name,
+              isSingular: false,
+            })
           : null,
     };
 
@@ -376,15 +389,30 @@ const buildShadowCRUD = (models, plugin) => {
     const mutations = {
       create:
         _.get(resolver, `Mutation.create${capitalizedName}`) !== false
-          ? Mutation.composeMutationResolver(_schema, plugin, name, 'create')
+          ? Mutation.composeMutationResolver({
+              _schema,
+              plugin,
+              name,
+              action: 'create',
+            })
           : null,
       update:
         _.get(resolver, `Mutation.update${capitalizedName}`) !== false
-          ? Mutation.composeMutationResolver(_schema, plugin, name, 'update')
+          ? Mutation.composeMutationResolver({
+              _schema,
+              plugin,
+              name,
+              action: 'update',
+            })
           : null,
       delete:
         _.get(resolver, `Mutation.delete${capitalizedName}`) !== false
-          ? Mutation.composeMutationResolver(_schema, plugin, name, 'delete')
+          ? Mutation.composeMutationResolver({
+              _schema,
+              plugin,
+              name,
+              action: 'delete',
+            })
           : null,
     };
 

@@ -12,10 +12,8 @@ import InputDescription from '../InputDescription';
 import InputErrors from '../InputErrors';
 import InputText from '../InputText';
 import InputSpacer from '../InputSpacer';
+import InputWrapper from '../InputWrapper';
 
-import styles from './styles.scss';
-
-/* eslint-disable jsx-a11y/no-autofocus */
 class InputTextWithErrors extends React.Component {
   // eslint-disable-line react/prefer-stateless-function
   state = { errors: [], hasInitialValue: false };
@@ -96,12 +94,8 @@ class InputTextWithErrors extends React.Component {
     }
 
     return (
-      <div
-        className={cn(
-          styles.containerText,
-          customBootstrapClass,
-          !isEmpty(className) && className
-        )}
+      <InputWrapper
+        className={cn(customBootstrapClass, !isEmpty(className) && className)}
         style={style}
       >
         <Label
@@ -137,7 +131,7 @@ class InputTextWithErrors extends React.Component {
           style={errorsStyle}
         />
         {spacer}
-      </div>
+      </InputWrapper>
     );
   }
 }
