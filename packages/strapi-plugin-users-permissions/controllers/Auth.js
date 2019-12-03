@@ -357,10 +357,27 @@ module.exports = {
       return ctx.badRequest(null, err);
     }
 
+
+
+
+
+    /** HARD PATCH **/
+    // The update on the whole user entity was buggy so I created a simplified user entity with only the resetPasswordToken field to update
+    const simplifiedUser = {
+      id: user.id,
+      resetPasswordToken: user.resetPasswordToken,
+    };
+
     // Update the user.
     await strapi
       .query('user', 'users-permissions')
-      .update({ id: user.id }, user);
+      .update({ id: user.id }, simplifiedUser);
+    /** END HARD PATCH **/
+
+
+
+
+
 
     ctx.send({ ok: true });
   },
